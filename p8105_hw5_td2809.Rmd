@@ -199,3 +199,5 @@ power_results |>
   theme(legend.title = element_blank())
 
 ```
+ * When the value of $\mu$ is low, the sample average of $\hat\mu$ for tests rejecting the null hypothesis tends to exceed the true value. Conversely, for higher values of $\mu$(such as 4, 5, 6), this sample average of $\hat\mu$ from tests where the null is rejected aligns closely with the true value.
+ * It suggests that they are not approximately equal, indicating an overestimation of the true effect when the null is rejected.
