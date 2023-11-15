@@ -43,7 +43,9 @@ homicides_summary =
   ) |> 
   filter(total_unsolved_homicides != 0)
 
-homicides_summary
+homicides_summary |> 
+  head(10) |> 
+  knitr::kable()
 
 ```
 
@@ -65,7 +67,7 @@ broom::tidy(baltimore_test)  |>
 Now run `prop.test` for each of the cities in your dataset, and extract both the proportion of unsolved homicides and the confidence interval for each. Do this within a “tidy” pipeline, making use of purrr::map, purrr::map2, list columns and unnest as necessary to create a tidy dataframe with estimated proportions and CIs for each city.
 
 ```{r}
-city_estimates <- homicides_summary  |> 
+city_estimates = homicides_summary  |> 
   group_by(city_state)  |> 
   summarize(
     prop_test = list(prop.test(total_unsolved_homicides, total_homicides))
@@ -84,4 +86,34 @@ ggplot(city_estimates, aes(x = reorder(city_state, estimate), y = estimate)) +
   geom_errorbar(aes(ymin = conf.low, ymax = conf.high)) +
   coord_flip() +
   labs(x = "City", y = "Proportion of Total Unsolved Homicides")
+```
+
+# Problem 2
+
+Create a tidy dataframe containing data from all participants, including the subject ID, arm, and observations over time
+```{r}
+import_data = function(name, url_path = "data/problem2_data/") {
+  read_csv(str_c(url_path, name), show_col_types = FALSE) 
+}
+
+files_df = 
+  tibble(names = list.files("data/data_p2/")) |> 
+  mutate(dat = map(names, ~import_data(.x, "data/data_p2/"))) |>
+  unnest(dat) |> 
+  mutate(names = str_remove(names, "\\.csv")) |> 
+  separate(names, into = c("arm", "id"), sep = "_") |> 
+  pivot_longer(
+    cols = starts_with("week"),
+    names_to = "week",
+    values_to = "observation",
+    names_prefix = "week_",
+    names_transform = list(week = as.numeric)
+  )
+
+files_df |> 
+  ggplot(aes(x = week, y = observation, group = id, color = id)) +
+  geom_line() +
+  geom_point() +
+  facet_grid(. ~ arm) +
+  labs(title = "Observations Over Weeks by Subject")
 ```
